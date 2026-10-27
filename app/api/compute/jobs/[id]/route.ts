@@ -1,0 +1,4 @@
+import {ComputeError,connection,failure,ownedJob,owner,remote,respond,saveJob} from '@/lib/compute-server';
+import type {ComputeJob} from '@/lib/compute-types';
+export const dynamic='force-dynamic';
+export async function GET(_request:Request,{params}:{params:Promise<{id:string}>}){try{const userId=await owner();const {id}=await params;const saved=await ownedJob(userId,id);if(['succeeded','failed','interrupted'].includes(saved.job.state))return respond({...saved.job,label:saved.label,cached:true});const c=await connection(userId);const r=await remote(c.baseUrl,c.token,'/v1/jobs/'+id);const fresh=await r.json() as ComputeJob;if(fresh.id!==id||fresh.kind!==saved.job.kind)throw new ComputeError('服务器任务身份不匹配',502);const job={...fresh,structureSource:saved.job.structureSource,quickShellSource:saved.job.quickShellSource};await saveJob(userId,job,saved.label);return respond({...job,label:saved.label});}catch(e){return failure(e);}}

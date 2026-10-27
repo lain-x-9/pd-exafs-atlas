@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1792742665072,
+      "tag": "0000_blushing_crusher_hogan",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1792856389801,
+      "tag": "0001_flimsy_riptide",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792895378096,
+      "tag": "0002_messy_fabian_cortez",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1792897356313,
+      "tag": "0003_typical_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1792980642633,
+      "tag": "0004_luxuriant_skullbuster",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1792982309446,
+      "tag": "0005_broken_black_widow",
+      "breakpoints": true
+    }
+  ]
+}

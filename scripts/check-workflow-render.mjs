@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import {readFileSync,existsSync} from 'node:fs';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+import ts from 'typescript';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+const root=fileURLToPath(new URL('..',import.meta.url)),native=createRequire(import.meta.url),cache=new Map();
+function load(file){file=path.resolve(file);if(cache.has(file))return cache.get(file).exports;const m={exports:{}};cache.set(file,m);const source=readFileSync(file,'utf8'),js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;
+ const require=id=>{if(id.startsWith('@/')||id.startsWith('.')){const base=id.startsWith('@/')?path.join(root,id.slice(2)):path.resolve(path.dirname(file),id);const candidate=[base,base+'.ts',base+'.tsx',base+'.json'].find(p=>existsSync(p));if(candidate?.endsWith('.json'))return JSON.parse(readFileSync(candidate,'utf8'));if(candidate)return load(candidate);throw Error('Missing local module '+id);}return native(id);};
+ new Function('require','module','exports',js)(require,m,m.exports);return m.exports;
+}
+const Home=load(path.join(root,'components/workspace-home.tsx')).default;
+const home=renderToStaticMarkup(React.createElement(Home,{onNavigate(){}}));for(const text of ['我有实验谱','我有候选结构','实验谱 + 多个模型'])assert(home.includes(text));
+const Cases=load(path.join(root,'components/research-case-workspace.tsx')).default;
+const experimental=renderToStaticMarkup(React.createElement(Cases,{kind:'experiment',onLaunch(){}}));assert(experimental.includes('无结构第一壳层分析'));assert(experimental.includes('可选：关联候选结构'));
+const predicted=renderToStaticMarkup(React.createElement(Cases,{kind:'prediction',onLaunch(){}}));assert(!predicted.includes('文件内的具体目标谱'));assert(!predicted.includes('EXAFS 实验拟合记录'));assert(predicted.includes('候选结构'));
+const validated=renderToStaticMarkup(React.createElement(Cases,{kind:'validation',onLaunch(){}}));assert(validated.includes('目前无法区分'));assert(validated.includes('EXAFS 实验拟合记录'));
+const Fdmnes=load(path.join(root,'components/xafs/fdmnes-panel.tsx')).default;
+const theory=renderToStaticMarkup(React.createElement(Fdmnes,{intent:'prediction',onConnection(){}}));assert(theory.includes('结构预测（无需实验谱）'));assert.match(theory,/<section hidden="" class="panel sl-current"><div class="fd-step"><span>可选/);assert(theory.includes('只计算理论 XANES'));
+const Compute=load(path.join(root,'components/compute-panel.tsx')).default;
+const exafs=renderToStaticMarkup(React.createElement(Compute,{mode:'research',onModeChange(){}}));assert(exafs.includes('没有结构：快速第一壳层'));assert(exafs.indexOf('无 CIF / 无现成路径')<exafs.indexOf('选择候选结构'));assert.match(exafs,/<div hidden=""><details class="panel compute-step"/);
+console.log('Workflow render checks passed: three real entry pages, no experimental prerequisite in prediction, optional structures in experiment, unknown conclusion in validation, and QFS before hidden structural steps. Static React render only; not a browser interaction test.');

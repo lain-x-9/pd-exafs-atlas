@@ -1,0 +1,52 @@
+SYNTHETIC TEST — NOT EXPERIMENTAL DATA
+=================== FEFFIT RESULTS ====================
+[[Statistics]]
+  n_function_calls     = 25
+  n_variables          = 4
+  n_data_points        = 98
+  n_independent        = 8.63943727
+  chi_square           = 2.62465402
+  reduced chi_square   = 0.56572681
+  r-factor             = 1.0714e-07
+  Akaike info crit     = -2.29292502
+  Bayesian info crit   = -1.66757523
+ 
+[[Parameters]]
+  s02                  =  0.9003993 +/- 3.9240e-4  (init= 0.8000000)
+  e0                   =  1.9952501 +/- 0.0047873  (init= 0.0000000)
+  dr_0                 =  0.0199729 +/- 2.5051e-5  (init= 0.0000000)
+  sig2_0               =  0.0040049 +/- 3.2232e-6  (init= 0.0030000)
+ 
+[[Correlations]] (unreported correlations are <  0.100)
+  s02, sig2_0          =  0.937
+  e0, dr_0             =  0.916
+  s02, dr_0            =  0.197
+  dr_0, sig2_0         =  0.189
+ 
+[[Dataset]]
+  unique_id            = 'dpg7umvi'
+  fit space            = 'r'
+  r-range              = 1.500, 3.000
+  k-range              = 3.000, 11.000
+  k window, dk         = 'hanning', 1.000
+  k-weight             = 2
+  epsilon_k            = 8.3598e-5
+  epsilon_r            = 0.0013374
+  n_independent        = 8.639
+  paths used in fit    = '/workspace/scratch/769d95bdae0c/compute-private/jobs/1c6c18260b80414bb957f42cc135f14f/feff0001.dat'
+ 
+[[Paths]]
+ = Path 'pghgkwrkp' Cu K Edge
+    feffdat file = /workspace/scratch/769d95bdae0c/compute-private/jobs/1c6c18260b80414bb957f42cc135f14f/feff0001.dat
+    geometry  atom      x        y        z      ipot
+              Cu      -0.00000, -0.00000, -0.00000  0 (absorber)
+              Cu      -1.80500, -1.80500, -0.00000  1
+     reff   =  2.5527000
+     degen  =  12.000000
+     n*s02  =  0.9003993 +/- 3.9240e-4  := 's02'
+     e0     =  1.9952501 +/- 0.0047873  := 'e0'
+     r      =  2.5726729 +/- 2.5051e-5  := 'reff + dr_0'
+     deltar =  0.0199729 +/- 2.5051e-5  := 'dr_0'
+     sigma2 =  0.0040049 +/- 3.2232e-6  := 'sig2_0'
+
+=======================================================

@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {writeFileSync,mkdirSync} from 'node:fs';
+import {parseSpectrum,convertSpectrum,suggestSettings,processSpectrum,reviewLog,demoSample,defaultPath} from '../lib/xafs-assistant.ts';
+import {gdsRows,larchScript,planMarkdown} from '../lib/xafs-guidance.ts';
+const demo=demoSample();const before=demo.text;const mapping={...demo.mapping,confirmed:true};const spectrum=convertSpectrum(parseSpectrum(demo.text),mapping);const p=suggestSettings(spectrum,mapping.kind);const result=processSpectrum(spectrum,mapping,p);
+assert.equal(demo.text,before);assert.ok(result.edgeStep>0);assert.equal(result.x.length,spectrum.x.length);
+const exactX=[],exactY=[];for(let x=-100;x<=300;x++){exactX.push(10000+x);exactY.push(.2+.0001*x+(x>=0?2+.0002*x+.0000005*x*x:0));}
+const exactP={...p,e0:10000,pre1:-100,pre2:-20,norm1:100,norm2:300,order:2};const exact=processSpectrum({x:exactX,y:exactY,issues:[]},mapping,exactP);assert.ok(Math.abs(exact.edgeStep-2)<1e-10);assert.ok(Math.abs(exact.norm[100]-1)<1e-10);
+const keV=convertSpectrum(parseSpectrum('e I0 It\n'+Array.from({length:15},(_,i)=>`${24+i/1000} 100 50`).join('\n')),{kind:'transmission',x:0,y:2,i0:1,unit:'keV',confirmed:true});assert.equal(keV.x[0],24000);assert.ok(Math.abs(keV.y[0]-Math.log(2))<1e-14);
+const bad=parseSpectrum('E mu\n1 2\n2 NaN\n3 4\n3 5\n');assert.ok(bad.issues.some(i=>i.level==='error'));assert.throws(()=>processSpectrum(convertSpectrum(bad,mapping),mapping,p),/阻断/);
+assert.throws(()=>processSpectrum(spectrum,{...mapping,confirmed:false},p),/确认/);assert.throws(()=>processSpectrum(spectrum,mapping,{...p,shift:1}),/依据/);assert.throws(()=>processSpectrum(spectrum,mapping,{...p,pre1:-1,pre2:-.1}),/点数/);
+const norm=processSpectrum(spectrum,{...mapping,kind:'normalized'},p);assert.deepEqual(norm.norm,spectrum.y);assert.equal(norm.pre,undefined);
+const near=processSpectrum({x:exactX,y:exactY,issues:[]},mapping,{...exactP,kmin:3,kmax:3});assert.ok(near.edgeStep>0);
+const k=Array.from({length:401},(_,i)=>2+i*.025);const ft=processSpectrum({x:k,y:k.map(v=>Math.sin(2*2.2*v)/v**2),issues:[]},{...mapping,kind:'chi'},{...p,kmin:2,kmax:12});const max=ft.ft.reduce((a,b)=>b.mag>a.mag?b:a);assert.ok(Math.abs(max.r-2.2)<.05);
+assert.equal(gdsRows(defaultPath()),null);const path={...defaultPath(),name:'feff0001.dat',pair:'Pd-O',source:'test local cluster',degen:3,reff:2.1,confirmed:true};assert.equal(gdsRows(path).length,5);assert.equal(gdsRows({...path,calibrated:true}),null);
+const review=reviewLog('Independent points : 5\nNumber of variables : 6\nR-factor : 0.01\ndr = -0.08 # +/- 0.02\nsig2 = -0.001 # +/- 0.002\nC(ncoord, sig2) = 0.95');assert.equal(review.stats.length,3);assert.ok(review.issues.some(i=>i.level==='error'));assert.ok(review.issues.some(i=>i.title.includes('强相关')));assert.ok(!review.issues.some(i=>i.title.includes('dr')));
+assert.equal(reviewLog('plain unsupported log').recognized,false);
+assert.ok(planMarkdown(demo,p,path,result).includes('s02*ncoord/3'));
+mkdirSync('outputs',{recursive:true});writeFileSync('outputs/assistant-numerical-reference.json',JSON.stringify({x:spectrum.x,y:spectrum.y,p,result}));writeFileSync('outputs/process_xafs.py',larchScript(demo,p,spectrum.x,spectrum.y));
+console.log('Assistant checks passed: source immutability, exact normalization, units/ln conversion, invalid rows, confirmation, calibration, short XANES, normalized input, FT peak, GDS conditions and log review.');

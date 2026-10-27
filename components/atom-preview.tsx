@@ -1,0 +1,10 @@
+'use client';
+import {useState} from 'react';
+import type {AtomRow} from '@/lib/compute-types';
+export default function AtomPreview({atoms,selected,onSelect}:{atoms:AtomRow[];selected:string;onSelect:(id:string)=>void}){
+ const [plane,setPlane]=useState('xy');const axes=plane==='xy'?[0,1]:plane==='xz'?[0,2]:[1,2];
+ const center=atoms.find(a=>String(a.index)===selected);const ordered=center?[...atoms].sort((a,b)=>distance(a,center)-distance(b,center)):atoms;
+ const shown=ordered.slice(0,80);const xs=shown.map(a=>a.position[axes[0]]),ys=shown.map(a=>a.position[axes[1]]);const xmin=Math.min(...xs),ymin=Math.min(...ys),span=Math.max(Math.max(...xs)-xmin,Math.max(...ys)-ymin,1);const x=(a:AtomRow)=>30+300*(a.position[axes[0]]-xmin)/span,y=(a:AtomRow)=>330-300*(a.position[axes[1]]-ymin)/span;
+ return <details className="beginner-guide"><summary>查看原子位置，辅助确认吸收位点</summary><label>投影方向<select value={plane} onChange={e=>setPlane(e.target.value)}><option value="xy">XY</option><option value="xz">XZ</option><option value="yz">YZ</option></select></label><svg viewBox="0 0 370 370" role="group" aria-label="结构坐标投影">{shown.map(a=><g key={a.index} role="button" tabIndex={0} aria-label={`选择 ${a.element} 原子 ${a.index}`} onClick={()=>onSelect(String(a.index))} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onSelect(String(a.index));}}}><circle cx={x(a)} cy={y(a)} r={String(a.index)===selected?12:7} fill={String(a.index)===selected?'#de8a32':a.element==='Pd'?'#407c9d':a.element==='O'?'#c95c5c':'#8c9a92'} stroke="white"/><text x={x(a)+10} y={y(a)-8} fontSize="10">{a.element} {a.index}</text><title>{a.label} · {a.position.map(v=>v.toFixed(3)).join(', ')} Å</title></g>)}</svg><p>橙色为当前吸收原子。仅展示解析坐标投影（最多 80 个原子），未展开周期镜像；投影重合不代表原子重合。</p>{center&&<p>按当前晶胞坐标计算的邻近原子：{ordered.filter(a=>a!==center).slice(0,6).map(a=>`${a.element} #${a.index}：${distance(a,center).toFixed(3)} Å`).join('；')}。距离未考虑周期镜像，实际散射路径以 FEFF 计算为准。</p>}</details>;
+}
+function distance(a:AtomRow,b:AtomRow){return Math.hypot(...a.position.map((v,i)=>v-b.position[i]));}

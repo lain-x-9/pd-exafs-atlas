@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {allowedComputeUrl,fitSanity,initialPath,parameter} from '../lib/compute-types.ts';
+assert.equal(allowedComputeUrl('https://safe-demo-host.trycloudflare.com/'),'https://safe-demo-host.trycloudflare.com');
+for(const url of ['http://safe-demo-host.trycloudflare.com','https://localhost','https://127.0.0.1','https://user:pass@demo.trycloudflare.com','https://demo.trycloudflare.com/api','https://demo.trycloudflare.com?token=test','https://demo.trycloudflare.com.evil.example','https://demo.trycloudflare.com:8080'])assert.throws(()=>allowedComputeUrl(url));
+const path=initialPath({filename:'feff0001.dat',reff:2.5527,degen:12,nleg:2,geometry:[],distance_meaning:'interatomic_distance'});
+path.selected=true;
+const config={kmin:3,kmax:11,rmin:1.5,rmax:3,s02:parameter(.9,.3,1.5),e0:parameter(0,-10,10,true),paths:[path]};
+assert.equal(fitSanity(config).n,3);
+assert.ok(Math.abs(fitSanity(config).nind-8.6394372684)<1e-8);
+path.coordination=parameter(12,0,30,true);
+assert.equal(fitSanity(config).n,4);
+config.s02.vary=true;
+assert.throws(()=>fitSanity(config),/S₀²/);
+config.s02.vary=false;
+assert.throws(()=>fitSanity({...config,rmax:1.6}),/自由参数/);
+path.sigma2.value=NaN;
+assert.throws(()=>fitSanity(config),/初值/);
+console.log('Compute checks passed: HTTPS destination restrictions, N/S02 identifiability, Nind and invalid parameters.');

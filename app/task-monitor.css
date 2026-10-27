@@ -1,0 +1,14 @@
+/* Scope both foreground and background so other workspace details cannot reduce log contrast. */
+.task-monitor .task-live-log pre{background:#ffffff;color:#172b24;border:1px solid #bdcdbf;font:14px/1.85 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;white-space:pre;overflow-wrap:normal;word-break:normal;overflow:auto;max-height:420px;padding:18px;border-radius:7px;opacity:1;color-scheme:light;tab-size:4}
+.task-monitor .task-live-log pre.wrap{white-space:pre-wrap;overflow-wrap:anywhere}
+.task-monitor .task-live-log pre:focus-visible{outline:2px solid #39765f;outline-offset:2px}
+.task-monitor .task-live-log pre::selection{background:#c7e6d6;color:#102d20}
+.task-monitor .task-live-log.expanded pre{max-height:72vh;min-height:260px;font-size:15px}
+.task-monitor .task-live-log>summary{font-size:14px;font-weight:600;color:#294f3b;padding:9px 0}
+.task-monitor .task-live-log b{font-size:13px;color:#294f3b}
+.task-log-tools{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 17px}
+.task-log-tools>span{font-size:12px;color:#52695d}
+.task-log-tools>div{display:flex;gap:8px;flex-wrap:wrap}
+.task-run-settings{display:grid;gap:6px;margin:15px 0;padding:13px;background:#edf3e9;border-radius:6px;color:#37543e;font-size:12px;line-height:1.8}
+.task-log-notice{background:#fff8e6;border:1px solid #e6d39c;border-radius:6px;padding:12px 14px;font-size:13px;color:#695124;line-height:1.9;margin-top:14px}
+@media(max-width:600px){.task-monitor .task-live-log pre{font-size:13px;padding:12px}.task-monitor .task-live-log.expanded pre{font-size:14px}.task-log-tools{align-items:flex-start;flex-direction:column}}

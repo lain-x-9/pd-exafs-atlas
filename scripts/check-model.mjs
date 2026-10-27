@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {assess,demoWorkspace,parseCSV,toCSV,parseImport,validateMerge,workspaceSchema} from '../lib/model.ts';
+const w=demoWorkspace();
+assert.deepEqual(w.candidates.map(c=>assess(c,w.constraints).status),['pass','pass','warn','fail','warn','fail','fail','missing']);
+assert.equal(assess(w.candidates[0],[]).status,'none');
+const missing=structuredClone(w.candidates[0]);missing.shells[0].n=null;assert.equal(assess(missing,w.constraints).status,'missing');
+assert.deepEqual(parseCSV(toCSV(w.candidates)),w.candidates.map(c=>({...c,shells:c.shells.filter(s=>s.n!==null||s.r!==null)})));
+assert.deepEqual(parseImport(JSON.stringify(w),'backup.json'),{candidates:w.candidates,constraints:w.constraints});
+assert.throws(()=>parseCSV('name,b,pd_o_n\nTest,true,invalid'));
+assert.throws(()=>parseCSV('name,b,pd_o_n\nTest,yes,3'));
+assert.throws(()=>parseCSV('name,b,pd_o_n\n"unclosed,true,3'));
+assert.throws(()=>validateMerge(w,{candidates:[w.candidates[0]],constraints:[]}));
+assert.throws(()=>workspaceSchema.parse({...w,constraints:[...w.constraints,w.constraints[0]]}));
+const quoted=structuredClone(w.candidates[0]);quoted.name='B, 位点 "A"';quoted.notes='line1\nline2';assert.deepEqual(parseCSV(toCSV([quoted])),[quoted]);
+console.log('10 model checks passed: thresholds, missingness, CSV/JSON round trips, invalid numbers, boolean validation, quotes and duplicates.');

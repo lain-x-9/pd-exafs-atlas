@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {fitHistorySettings} from '../lib/fit-history.ts';
+import {parameter} from '../lib/compute-types.ts';
+const rows=[1,2].map(i=>({filename:`feff000${i}.dat`,reff:2+i,degen:4,nleg:2,geometry:[],distance_meaning:'interatomic_distance'}));
+const request={kmin:2.5,kmax:10.2,rmin:1.1,rmax:2.7,kweight:3,dk:.7,window:'kaiser',s02:parameter(.82,.3,1.5),e0:parameter(3,-10,10,true),provenance:'archived sample A',paths:[{filename:rows[1].filename,deltar:parameter(-.03,-.1,.1,true),sigma2:parameter(.005,.0001,.02,true),coordination:parameter(3,0,10,true)}]};
+const before=JSON.stringify(request),q=fitHistorySettings(request,rows);
+assert.equal(q.paths[0].selected,false);assert.equal(q.paths[1].selected,true);assert.equal(q.paths[1].coordination.value,3);assert.equal(q.kmin,2.5);assert.equal(q.window,'kaiser');assert.equal(q.s02.value,.82);
+q.paths[1].coordination.value=5;q.s02.value=.9;assert.equal(JSON.stringify(request),before,'editing restored settings must preserve archived record');
+assert.equal('file' in q,false,'archived upload must not become new target');
+assert.throws(()=>fitHistorySettings({...request,paths:[{...request.paths[0],filename:'missing.dat'}]},rows));
+assert.throws(()=>fitHistorySettings({...request,s02:undefined},rows));
+assert.throws(()=>fitHistorySettings({...request,kmin:NaN},rows));
+console.log('History checks passed: nondefault settings, selected path mapping, archived immutability, no implicit target and corrupt-record rejection.');
